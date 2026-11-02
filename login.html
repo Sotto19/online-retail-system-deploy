@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <form novalidate>
+        <form id="login-form" action="javascript:void(0);" onsubmit="return false;" novalidate>
           <div class="form-group">
             <label for="email">Email Address <span class="required">*</span></label>
             <input id="email" type="email" class="form-control" placeholder="priya@example.com" autocomplete="email" required />
@@ -73,7 +73,7 @@
             </label>
             <a href="forgot-password.html">Forgot password?</a>
           </div>
-          <button type="submit" class="btn btn--primary btn--full">Sign In</button>
+          <button type="submit" id="btn-login-submit" class="btn btn--primary btn--full">Sign In</button>
         </form>
         <div class="divider-text">or continue with</div>
         <div class="grid-2 gap-sm">
