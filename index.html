@@ -147,7 +147,7 @@
       <h2 id="featured-heading" class="section-title">⭐ Featured Products <a href="customer/products.html">View All</a></h2>
       <div class="product-grid">
         <!-- Product 1 -->
-        <article class="product-card">
+        <article class="product-card" data-id="1">
           <div class="product-card__img-wrap">
             <img src="images/products/headphones.jpg" alt="Wireless Noise-Cancelling Headphones" />
             <span class="product-card__badge"><span class="badge badge--discount">20% OFF</span></span>
@@ -155,7 +155,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">SoundCore</span>
-            <a href="customer/product-details.html" class="product-card__name">Wireless Noise-Cancelling Headphones</a>
+            <a href="customer/product-details.html?id=1" class="product-card__name">Wireless Noise-Cancelling Headphones</a>
             <div class="product-card__rating">
               <span class="stars">★★★★½</span>
               <span class="rating-text">4.5 (312)</span>
@@ -167,11 +167,11 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="1">🛒 Add to Cart</button>
           </div>
         </article>
         <!-- Product 2 -->
-        <article class="product-card">
+        <article class="product-card" data-id="2">
           <div class="product-card__img-wrap">
             <img src="images/products/phone.jpg" alt="Galaxy S24 FE 5G" />
             <span class="product-card__badge"><span class="badge badge--discount">15% OFF</span></span>
@@ -179,7 +179,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Samsung</span>
-            <a href="customer/product-details.html" class="product-card__name">Galaxy S24 FE 5G (128GB, Graphite)</a>
+            <a href="customer/product-details.html?id=2" class="product-card__name">Galaxy S24 FE 5G (128GB, Graphite)</a>
             <div class="product-card__rating">
               <span class="stars">★★★★★</span>
               <span class="rating-text">4.8 (1,204)</span>
@@ -190,18 +190,18 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="2">🛒 Add to Cart</button>
           </div>
         </article>
         <!-- Product 3 -->
-        <article class="product-card">
+        <article class="product-card" data-id="4">
           <div class="product-card__img-wrap">
             <img src="images/products/shoes.jpg" alt="Air Max 270 Running Shoes" />
             <button class="btn--wishlist" aria-label="Add to wishlist">🤍</button>
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Nike</span>
-            <a href="customer/product-details.html" class="product-card__name">Air Max 270 Running Shoes — Men's</a>
+            <a href="customer/product-details.html?id=4" class="product-card__name">Air Max 270 Running Shoes — Men's</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.3 (876)</span>
@@ -213,11 +213,11 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="4">🛒 Add to Cart</button>
           </div>
         </article>
         <!-- Product 4 -->
-        <article class="product-card">
+        <article class="product-card" data-id="1">
           <div class="product-card__img-wrap">
             <img src="images/products/laptop.jpg" alt="Lenovo IdeaPad Slim 3" />
             <span class="product-card__badge"><span class="badge badge--discount">12% OFF</span></span>
@@ -225,7 +225,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Lenovo</span>
-            <a href="customer/product-details.html" class="product-card__name">IdeaPad Slim 3 (Intel i5, 16GB RAM, 512GB SSD)</a>
+            <a href="customer/product-details.html?id=1" class="product-card__name">IdeaPad Slim 3 (Intel i5, 16GB RAM, 512GB SSD)</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.2 (543)</span>
@@ -236,7 +236,7 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="1">🛒 Add to Cart</button>
           </div>
         </article>
       </div>
@@ -246,7 +246,7 @@
     <section class="section--sm" aria-labelledby="bestsellers-heading">
       <h2 id="bestsellers-heading" class="section-title">🏆 Best Sellers <a href="customer/products.html">View All</a></h2>
       <div class="product-grid">
-        <article class="product-card">
+        <article class="product-card" data-id="6">
           <div class="product-card__img-wrap">
             <img src="images/products/cookware.jpg" alt="Prestige Hard Anodised Non-Stick Kadai" />
             <span class="product-card__badge"><span class="badge badge--success">Best Seller</span></span>
@@ -254,7 +254,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Prestige</span>
-            <a href="customer/product-details.html" class="product-card__name">Hard Anodised Non-Stick Kadai 3L with Glass Lid</a>
+            <a href="customer/product-details.html?id=6" class="product-card__name">Hard Anodised Non-Stick Kadai 3L with Glass Lid</a>
             <div class="product-card__rating">
               <span class="stars">★★★★★</span>
               <span class="rating-text">4.7 (2,341)</span>
@@ -266,17 +266,17 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="6">🛒 Add to Cart</button>
           </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-id="8">
           <div class="product-card__img-wrap">
             <img src="images/products/hairoil.jpg" alt="Mamaearth Onion Hair Oil" />
             <button class="btn--wishlist" aria-label="Add to wishlist">🤍</button>
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Mamaearth</span>
-            <a href="customer/product-details.html" class="product-card__name">Onion Hair Oil for Hair Regrowth 250ml</a>
+            <a href="customer/product-details.html?id=8" class="product-card__name">Onion Hair Oil for Hair Regrowth 250ml</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.4 (18,920)</span>
@@ -287,10 +287,10 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="8">🛒 Add to Cart</button>
           </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-id="3">
           <div class="product-card__img-wrap">
             <img src="images/products/smartwatch.jpg" alt="boAt Wave Pro Smart Watch" />
             <span class="product-card__badge"><span class="badge badge--discount">30% OFF</span></span>
@@ -298,7 +298,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">boAt</span>
-            <a href="customer/product-details.html" class="product-card__name">Wave Pro Smart Watch with AMOLED Display</a>
+            <a href="customer/product-details.html?id=3" class="product-card__name">Wave Pro Smart Watch with AMOLED Display</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.1 (6,542)</span>
@@ -310,17 +310,17 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="3">🛒 Add to Cart</button>
           </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-id="7">
           <div class="product-card__img-wrap">
             <img src="images/products/book.jpg" alt="Atomic Habits by James Clear" />
             <button class="btn--wishlist" aria-label="Add to wishlist">🤍</button>
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Penguin</span>
-            <a href="customer/product-details.html" class="product-card__name">Atomic Habits by James Clear (Paperback)</a>
+            <a href="customer/product-details.html?id=7" class="product-card__name">Atomic Habits by James Clear (Paperback)</a>
             <div class="product-card__rating">
               <span class="stars">★★★★★</span>
               <span class="rating-text">4.9 (45,210)</span>
@@ -331,7 +331,7 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="7">🛒 Add to Cart</button>
           </div>
         </article>
       </div>
@@ -341,7 +341,7 @@
     <section class="section--sm" aria-labelledby="deals-heading">
       <h2 id="deals-heading" class="section-title">⚡ Deals of the Day <a href="customer/products.html">View All</a></h2>
       <div class="product-grid">
-        <article class="product-card">
+        <article class="product-card" data-id="4">
           <div class="product-card__img-wrap">
             <img src="images/products/bag.jpg" alt="Lavie Women's Tote Bag" />
             <span class="product-card__badge"><span class="badge badge--accent">Flash Deal</span></span>
@@ -349,7 +349,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Lavie</span>
-            <a href="customer/product-details.html" class="product-card__name">Women's Tote Bag — Tan Brown</a>
+            <a href="customer/product-details.html?id=4" class="product-card__name">Women's Tote Bag — Tan Brown</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.3 (921)</span>
@@ -361,10 +361,10 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="4">🛒 Add to Cart</button>
           </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-id="1">
           <div class="product-card__img-wrap">
             <img src="images/products/printer.jpg" alt="HP DeskJet Colour Printer" />
             <span class="product-card__badge"><span class="badge badge--discount">40% OFF</span></span>
@@ -372,7 +372,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">HP</span>
-            <a href="customer/product-details.html" class="product-card__name">DeskJet 2775 All-in-One Wi-Fi Colour Printer</a>
+            <a href="customer/product-details.html?id=1" class="product-card__name">DeskJet 2775 All-in-One Wi-Fi Colour Printer</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.0 (3,102)</span>
@@ -383,17 +383,17 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="1">🛒 Add to Cart</button>
           </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-id="3">
           <div class="product-card__img-wrap">
             <img src="images/products/yogamat.jpg" alt="Boldfit Yoga Mat 6mm" />
             <button class="btn--wishlist" aria-label="Add to wishlist">🤍</button>
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Boldfit</span>
-            <a href="customer/product-details.html" class="product-card__name">Yoga Mat Anti-Slip 6mm with Carry Bag</a>
+            <a href="customer/product-details.html?id=3" class="product-card__name">Yoga Mat Anti-Slip 6mm with Carry Bag</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.5 (7,832)</span>
@@ -405,10 +405,10 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="3">🛒 Add to Cart</button>
           </div>
         </article>
-        <article class="product-card">
+        <article class="product-card" data-id="2">
           <div class="product-card__img-wrap">
             <img src="images/products/keyboard.jpg" alt="Redgear Mechanical Gaming Keyboard RGB" />
             <span class="product-card__badge"><span class="badge badge--discount">25% OFF</span></span>
@@ -416,7 +416,7 @@
           </div>
           <div class="product-card__body">
             <span class="product-card__brand">Redgear</span>
-            <a href="customer/product-details.html" class="product-card__name">MP80 Wired Mechanical Gaming Keyboard RGB</a>
+            <a href="customer/product-details.html?id=2" class="product-card__name">MP80 Wired Mechanical Gaming Keyboard RGB</a>
             <div class="product-card__rating">
               <span class="stars">★★★★☆</span>
               <span class="rating-text">4.2 (2,105)</span>
@@ -427,7 +427,7 @@
             </div>
           </div>
           <div class="product-card__actions">
-            <a href="customer/cart.html" class="btn btn--secondary btn--sm">🛒 Add to Cart</a>
+            <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="2">🛒 Add to Cart</button>
           </div>
         </article>
       </div>

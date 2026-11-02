@@ -33,23 +33,69 @@
       const desc = document.querySelector('.two-col + div p');
       if (desc && p.description) desc.textContent = p.description;
 
-      const addBtn = document.querySelector('a[href*="cart.html"].btn--secondary, .btn-add-cart');
+      const addBtn = document.querySelector('a[href*="cart.html"].btn--secondary, .btn-add-cart, button.btn--secondary');
       if (addBtn) {
         addBtn.addEventListener('click', async (e) => {
           e.preventDefault();
-          if (!window.api.getToken()) {
+          if (!window.api || !window.api.getToken()) {
             alert('Please sign in to add this item to your cart.');
             window.location.href = '../login.html';
             return;
           }
           const qtyInput = document.querySelector('.qty-stepper input');
-          const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+          const qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
+          const origText = addBtn.innerHTML;
+          addBtn.disabled = true;
+          addBtn.textContent = 'Adding...';
+
           try {
             await window.api.addToCart(p.id, qty);
-            alert(`Added ${qty} item(s) to your cart!`);
+            addBtn.textContent = '✓ Added to Cart!';
+            addBtn.style.backgroundColor = '#16A34A';
+            addBtn.style.color = '#FFFFFF';
+            addBtn.style.borderColor = '#16A34A';
+
             if (window.refreshCartBadge) window.refreshCartBadge();
+            if (window.showToast) window.showToast(`🛒 Added ${qty}x ${p.title} to your cart!`, 'cart.html', 'View Cart');
+
+            setTimeout(() => {
+              addBtn.disabled = false;
+              addBtn.innerHTML = origText;
+              addBtn.style.backgroundColor = '';
+              addBtn.style.color = '';
+              addBtn.style.borderColor = '';
+            }, 1500);
           } catch (err) {
             alert(err.message || 'Failed to add to cart.');
+            addBtn.disabled = false;
+            addBtn.innerHTML = origText;
+          }
+        });
+      }
+
+      const buyBtn = document.querySelector('a[href*="checkout.html"].btn--primary, .btn-buy-now, button.btn--primary');
+      if (buyBtn) {
+        buyBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          if (!window.api || !window.api.getToken()) {
+            alert('Please sign in to proceed with checkout.');
+            window.location.href = '../login.html';
+            return;
+          }
+          const qtyInput = document.querySelector('.qty-stepper input');
+          const qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
+          const origText = buyBtn.textContent;
+          buyBtn.disabled = true;
+          buyBtn.textContent = 'Preparing Checkout...';
+
+          try {
+            await window.api.addToCart(p.id, qty);
+            if (window.refreshCartBadge) window.refreshCartBadge();
+            window.location.href = 'checkout.html';
+          } catch (err) {
+            alert(err.message || 'Failed to initialize checkout.');
+            buyBtn.disabled = false;
+            buyBtn.textContent = origText;
           }
         });
       }
