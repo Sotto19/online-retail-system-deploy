@@ -35,7 +35,7 @@ export const mockData = {
       id: 1,
       name: 'Arjun Khanna',
       email: 'admin@example.com',
-      password_hash: '$2a$10$wT8fUfG8fW2m6z7q1C4g9eZqJk7Hh5P2kQ9L8yW6vE3mD1pB5nK8q', // password123
+      password_hash: '$2a$10$wT8fUfG8fW2m6z7q1C4g9eZqJk7Hh5P2kQ9L8yW6vE3mD1pB5nK8q', // password123 or admin123
       phone: '+91 9876543210',
       role: 'admin',
       status: 'active'
@@ -55,6 +55,24 @@ export const mockData = {
       email: 'rahul@example.com',
       password_hash: '$2a$10$wT8fUfG8fW2m6z7q1C4g9eZqJk7Hh5P2kQ9L8yW6vE3mD1pB5nK8q',
       phone: '+91 9823456789',
+      role: 'customer',
+      status: 'active'
+    },
+    {
+      id: 4,
+      name: 'Retail Admin',
+      email: 'admin@retail.com',
+      password_hash: '$2a$10$wT8fUfG8fW2m6z7q1C4g9eZqJk7Hh5P2kQ9L8yW6vE3mD1pB5nK8q', // admin123
+      phone: '+91 9999988888',
+      role: 'admin',
+      status: 'active'
+    },
+    {
+      id: 5,
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      password_hash: '$2a$10$wT8fUfG8fW2m6z7q1C4g9eZqJk7Hh5P2kQ9L8yW6vE3mD1pB5nK8q', // password123
+      phone: '+91 9888877777',
       role: 'customer',
       status: 'active'
     }

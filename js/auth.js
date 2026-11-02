@@ -26,9 +26,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (isLoginPage) {
     const form = document.querySelector('form');
     if (form) {
-      // Auto-fill demo credentials helper if clicked
       const emailInput = document.getElementById('email') || form.querySelector('input[type="email"]');
       const passInput = document.getElementById('password') || form.querySelector('input[type="password"]');
+
+      const btnAdmin = document.getElementById('btn-fill-admin');
+      const btnCustomer = document.getElementById('btn-fill-customer');
+
+      if (btnAdmin) {
+        btnAdmin.addEventListener('click', () => {
+          if (emailInput) emailInput.value = 'admin@example.com';
+          if (passInput) passInput.value = 'password123';
+        });
+      }
+
+      if (btnCustomer) {
+        btnCustomer.addEventListener('click', () => {
+          if (emailInput) emailInput.value = 'priya@example.com';
+          if (passInput) passInput.value = 'password123';
+        });
+      }
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
