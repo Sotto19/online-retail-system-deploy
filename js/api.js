@@ -86,7 +86,8 @@ const api = {
   logout() {
     this.setToken(null);
     this.setCurrentUser(null);
-    window.location.href = window.location.pathname.includes('/admin/') ? '../login.html' : 'login.html';
+    const isSubdir = window.location.pathname.includes('/admin/') || window.location.pathname.includes('/customer/');
+    window.location.href = isSubdir ? '../login.html' : 'login.html';
   },
 
   async getMe() {

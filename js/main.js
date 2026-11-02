@@ -44,31 +44,70 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   window.showToast = showToast;
 
-  // 2. Update Navbar User Session Status (Safe standard selectors, NO :contains)
+  // 2. Update Navbar User Session Status & Sign Out Option
   try {
     const user = window.api ? window.api.getCurrentUser() : null;
     const isSubDir = window.location.pathname.includes('/customer/') || window.location.pathname.includes('/admin/');
     const basePath = isSubDir ? '..' : '.';
 
-    // Find all account links in header
-    const accountLinks = document.querySelectorAll('a[href*="login.html"], .navbar__icons a[aria-label*="Account"], a.navbar__icon-btn:first-child');
-    accountLinks.forEach(link => {
-      if (user) {
+    if (user) {
+      // Find all account links in header
+      const accountLinks = document.querySelectorAll('a[href*="login.html"], .navbar__icons a[aria-label*="Account"], a.navbar__icon-btn:first-child');
+      accountLinks.forEach(link => {
         if (user.role === 'admin' || user.role === 'manager') {
           link.href = `${basePath}/admin/dashboard.html`;
-          link.title = `Admin: ${user.name}`;
+          link.title = `Admin Dashboard (${user.name})`;
         } else {
           link.href = `${basePath}/customer/profile.html`;
-          link.title = `Account: ${user.name}`;
+          link.title = `My Profile (${user.name})`;
         }
 
-        const label = link.querySelector('.icon-label') || link;
-        if (label.classList && label.classList.contains('icon-label')) {
+        const label = link.querySelector('.icon-label');
+        if (label) {
           label.textContent = user.name.split(' ')[0];
         } else {
-          // If plain text link
           const icon = link.innerHTML.match(/^[^\w\s]+/);
           link.innerHTML = (icon ? icon[0] + ' ' : '👤 ') + user.name.split(' ')[0];
+        }
+      });
+
+      // Add prominent Sign Out button to navbar icons if not already added
+      const navIcons = document.querySelector('.navbar__icons');
+      if (navIcons && !document.getElementById('nav-signout-btn')) {
+        const signoutBtn = document.createElement('a');
+        signoutBtn.id = 'nav-signout-btn';
+        signoutBtn.href = 'javascript:void(0);';
+        signoutBtn.className = 'navbar__icon-btn btn-signout';
+        signoutBtn.setAttribute('aria-label', 'Sign Out');
+        signoutBtn.title = `Sign Out (${user.name})`;
+        signoutBtn.style.cursor = 'pointer';
+        signoutBtn.innerHTML = `<span>🚪</span><span class="icon-label" style="color:var(--danger,#DC2626);font-weight:600">Sign Out</span>`;
+        navIcons.appendChild(signoutBtn);
+      }
+
+      // Update footer login link if present
+      const footerLoginLinks = document.querySelectorAll('.footer a[href*="login.html"]');
+      footerLoginLinks.forEach(link => {
+        link.href = 'javascript:void(0);';
+        link.className = 'btn-signout';
+        link.textContent = 'Sign Out';
+        link.title = `Signed in as ${user.name}`;
+      });
+    }
+
+    // Global click listener for any sign out trigger
+    document.addEventListener('click', (e) => {
+      const signoutBtn = e.target.closest('.btn-signout, [data-action="signout"], [data-action="logout"], #nav-signout-btn');
+      if (signoutBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.api && typeof window.api.logout === 'function') {
+          window.api.logout();
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          const isSub = window.location.pathname.includes('/customer/') || window.location.pathname.includes('/admin/');
+          window.location.href = isSub ? '../login.html' : 'login.html';
         }
       }
     });

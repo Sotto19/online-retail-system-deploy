@@ -21,6 +21,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Add Sign Out buttons to Admin Topbar & Sidebar
+  const topbarActions = document.querySelector('.topbar__actions');
+  if (topbarActions && !document.getElementById('admin-topbar-logout')) {
+    const logoutBtn = document.createElement('button');
+    logoutBtn.id = 'admin-topbar-logout';
+    logoutBtn.type = 'button';
+    logoutBtn.title = 'Sign Out of Admin';
+    logoutBtn.setAttribute('aria-label', 'Sign Out');
+    logoutBtn.className = 'topbar__btn btn-admin-logout';
+    logoutBtn.style.cssText = 'color:#EF4444;border:none;background:rgba(239,68,68,0.1);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-left:8px;';
+    logoutBtn.innerHTML = '<span>🚪</span><span>Sign Out</span>';
+    logoutBtn.onclick = () => window.api.logout();
+    topbarActions.appendChild(logoutBtn);
+  }
+
+  const sidebarNav = document.querySelector('.sidebar__nav');
+  if (sidebarNav && !document.getElementById('admin-sidebar-logout')) {
+    const sidebarLogout = document.createElement('a');
+    sidebarLogout.id = 'admin-sidebar-logout';
+    sidebarLogout.href = 'javascript:void(0);';
+    sidebarLogout.className = 'sidebar__link btn-admin-logout';
+    sidebarLogout.style.color = '#EF4444';
+    sidebarLogout.innerHTML = '<span class="link-icon">🚪</span><span>Sign Out</span>';
+    sidebarLogout.onclick = (e) => {
+      e.preventDefault();
+      window.api.logout();
+    };
+    sidebarNav.appendChild(sidebarLogout);
+  }
+
   const path = window.location.pathname;
 
   // 1. DASHBOARD PAGE
