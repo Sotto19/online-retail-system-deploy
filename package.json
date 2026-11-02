@@ -1,0 +1,24 @@
+{
+  "name": "online-retail-system",
+  "version": "1.0.0",
+  "description": "Full-Stack Shopping Management System with Node.js, Express, MySQL, and Modern Vanilla Frontend",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "server": "npm --prefix server start",
+    "server:dev": "npm --prefix server run dev",
+    "db:init": "node server/database/initDb.js",
+    "postinstall": "npm --prefix server install"
+  },
+  "keywords": [
+    "ecommerce",
+    "retail",
+    "shopping-management",
+    "express",
+    "mysql",
+    "jwt",
+    "rest-api"
+  ],
+  "author": "Satyabrata",
+  "license": "ISC"
+}
