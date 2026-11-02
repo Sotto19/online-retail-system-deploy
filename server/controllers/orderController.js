@@ -102,10 +102,11 @@ export const createOrder = async (req, res) => {
         // 2. Insert Order Items & Deduct Stock
         for (const item of orderItems) {
           const itemTotal = parseFloat((parseFloat(item.price) * item.quantity).toFixed(2));
+          const title = item.product_title || item.title || 'Product';
           await conn.query(
             `INSERT INTO order_items (order_id, product_id, product_title, price, quantity, total_price)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [orderId, item.product_id, item.product_title, parseFloat(item.price), item.quantity, itemTotal]
+            [orderId, item.product_id, title, parseFloat(item.price), item.quantity, itemTotal]
           );
 
           // Deduct stock
@@ -158,7 +159,7 @@ export const createOrder = async (req, res) => {
         created_at: new Date().toISOString(),
         items: orderItems.map(i => ({
           product_id: i.product_id,
-          product_title: i.product_title,
+          product_title: i.product_title || i.title || 'Product',
           price: parseFloat(i.price),
           quantity: i.quantity,
           total_price: parseFloat((parseFloat(i.price) * i.quantity).toFixed(2))
