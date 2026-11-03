@@ -374,6 +374,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? Math.round((1 - price / comparePrice) * 100) 
             : null;
 
+          const stock = parseInt(p.stock_quantity, 10);
+          const reorder = parseInt(p.reorder_level, 10) || 10;
+          const isOutOfStock = stock <= 0;
+          const isLowStock = !isOutOfStock && stock <= reorder;
+
+          const stockBadgeHtml = isOutOfStock
+            ? '<span class="badge badge--danger" style="margin-top:6px;display:inline-block;font-size:11px">Out of Stock</span>'
+            : isLowStock
+            ? `<span class="badge badge--warning" style="margin-top:6px;display:inline-block;font-size:11px">Low Stock (${stock} left)</span>`
+            : `<span class="badge badge--success" style="margin-top:6px;display:inline-block;font-size:11px">In Stock (${stock})</span>`;
+
           return `
             <article class="product-card" data-id="${p.id}">
               <div class="product-card__img-wrap">
@@ -393,9 +404,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                   ${comparePrice ? `<span class="price--old">₹${comparePrice.toLocaleString('en-IN')}</span>` : ''}
                   ${discountPct ? `<span class="price--save">Save ₹${(comparePrice - price).toLocaleString('en-IN')}</span>` : ''}
                 </div>
+                <div>${stockBadgeHtml}</div>
               </div>
               <div class="product-card__actions">
-                <button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="${p.id}">🛒 Add to Cart</button>
+                ${isOutOfStock 
+                  ? '<button type="button" class="btn btn--secondary btn--sm btn-add-cart" disabled style="opacity:0.5;cursor:not-allowed">Out of Stock</button>' 
+                  : `<button type="button" class="btn btn--secondary btn--sm btn-add-cart" data-product-id="${p.id}">🛒 Add to Cart</button>`}
               </div>
             </article>
           `;

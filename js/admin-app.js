@@ -489,48 +489,187 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 5. INVENTORY PAGE
   if (path.endsWith('inventory.html')) {
     const tbody = document.querySelector('.data-table tbody');
+    const searchInput = document.querySelector('.admin-content input[type="text"]');
+    const statusSelect = document.querySelector('.admin-content select');
+    const alertBox = document.querySelector('.admin-content .alert');
+    const exportBtn = document.querySelector('.admin-content button.btn--outline');
+
     if (tbody) {
-      try {
-        const data = await window.api.admin.getInventory();
-        const items = data.inventory || [];
+      let inventoryItems = [];
 
-        tbody.innerHTML = items.map(item => `
-          <tr data-product-id="${item.id}">
-            <td><strong>${item.sku}</strong></td>
-            <td>${item.title}</td>
-            <td>${item.category_name || 'General'}</td>
-            <td><strong style="color:${item.stock_quantity <= item.reorder_level ? '#DC2626' : '#16A34A'}">${item.stock_quantity}</strong></td>
-            <td>${item.reorder_level}</td>
-            <td>
-              <button type="button" class="btn btn--outline btn--xs btn-restock">+ Restock</button>
-            </td>
-          </tr>
-        `).join('');
-
-        tbody.addEventListener('click', async (e) => {
-          if (e.target.classList.contains('btn-restock')) {
-            const tr = e.target.closest('tr');
-            const productId = tr.dataset.productId;
-            const addedQty = prompt('Enter quantity to add to stock:', '20');
-
-            if (addedQty && parseInt(addedQty, 10) > 0) {
-              try {
-                await window.api.admin.adjustInventory(productId, 'restock', parseInt(addedQty, 10), 'Restock from inventory manager');
-                alert('Stock updated successfully!');
-                window.location.reload();
-              } catch (err) {
-                alert(err.message || 'Failed to adjust inventory.');
-              }
-            }
+      async function fetchInventory() {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">Loading real-time inventory from database...</td></tr>';
+        try {
+          let data = null;
+          try {
+            data = await window.api.admin.getInventory();
+          } catch (err) {
+            console.warn('Admin inventory fetch failed, attempting public products fallback:', err);
           }
-        });
-      } catch (err) {
-        console.error('Failed to load inventory:', err);
+
+          if (data && data.inventory && data.inventory.length > 0) {
+            inventoryItems = data.inventory;
+          } else {
+            // Fallback to getProducts
+            const prodData = await window.api.getProducts({ limit: 100, status: 'all' });
+            inventoryItems = (prodData.products || []).map(p => ({
+              ...p,
+              category_name: p.category_name || 'General',
+              reorder_level: p.reorder_level || 10,
+              max_stock: p.max_stock || Math.max(100, (p.reorder_level || 10) * 5)
+            }));
+          }
+
+          renderInventoryTable();
+        } catch (err) {
+          console.error('Failed to load inventory:', err);
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--danger)">Failed to load inventory: ${err.message}</td></tr>`;
+        }
       }
+
+      function renderInventoryTable() {
+        const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        const statusFilter = statusSelect ? statusSelect.value : 'All Status';
+
+        const filtered = inventoryItems.filter(item => {
+          // Search term
+          if (searchTerm) {
+            const titleMatch = (item.title || '').toLowerCase().includes(searchTerm);
+            const skuMatch = (item.sku || '').toLowerCase().includes(searchTerm);
+            const brandMatch = (item.brand || '').toLowerCase().includes(searchTerm);
+            const catMatch = (item.category_name || '').toLowerCase().includes(searchTerm);
+            if (!titleMatch && !skuMatch && !brandMatch && !catMatch) return false;
+          }
+
+          // Status filter
+          const stock = parseInt(item.stock_quantity, 10);
+          const reorder = parseInt(item.reorder_level, 10) || 10;
+          if (statusFilter === 'In Stock') {
+            return stock > reorder;
+          }
+          if (statusFilter === 'Low Stock') {
+            return stock > 0 && stock <= reorder;
+          }
+          if (statusFilter === 'Out of Stock') {
+            return stock === 0;
+          }
+          return true;
+        });
+
+        // Update alert banner
+        const lowStockCount = inventoryItems.filter(i => parseInt(i.stock_quantity, 10) <= (parseInt(i.reorder_level, 10) || 10)).length;
+        if (alertBox) {
+          if (lowStockCount > 0) {
+            alertBox.className = 'alert alert--warning';
+            alertBox.style.display = 'flex';
+            alertBox.innerHTML = `<span>⚠️ Notice:</span><div><strong>${lowStockCount} ${lowStockCount === 1 ? 'product has' : 'products have'} low or zero stock.</strong> Stock decrements automatically whenever customer orders are confirmed.</div>`;
+          } else {
+            alertBox.className = 'alert alert--success';
+            alertBox.style.display = 'flex';
+            alertBox.style.background = '#ECFDF5';
+            alertBox.style.borderColor = '#A7F3D0';
+            alertBox.style.color = '#065F46';
+            alertBox.innerHTML = `<span>✓ Healthy Inventory:</span><div>All products currently have sufficient stock. Automatic decrements active on orders.</div>`;
+          }
+        }
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted)">No matching products found in inventory.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(item => {
+          const stock = parseInt(item.stock_quantity, 10);
+          const reorder = parseInt(item.reorder_level, 10) || 10;
+          const maxStock = item.max_stock || Math.max(100, reorder * 5);
+          const isOutOfStock = stock <= 0;
+          const isLowStock = !isOutOfStock && stock <= reorder;
+
+          const stockColor = isOutOfStock ? '#DC2626' : isLowStock ? '#D97706' : '#16A34A';
+          const badgeClass = isOutOfStock ? 'danger' : isLowStock ? 'warning' : 'success';
+          const badgeText = isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock';
+
+          return `
+            <tr data-product-id="${item.id}">
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <img src="${item.image_url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100'}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:6px" />
+                  <div>
+                    <div style="font-weight:600">${item.title}</div>
+                    <div style="font-size:12px;color:var(--text-muted)">${item.category_name || item.brand || 'General'}</div>
+                  </div>
+                </div>
+              </td>
+              <td><code>${item.sku}</code></td>
+              <td>
+                <strong style="font-size:15px;color:${stockColor}">${stock}</strong>
+              </td>
+              <td>${reorder}</td>
+              <td>${maxStock}</td>
+              <td>
+                <span class="badge badge--${badgeClass}">${badgeText}</span>
+              </td>
+              <td>
+                <button type="button" class="btn btn--outline btn--xs btn-restock" data-product-id="${item.id}" data-title="${item.title}">+ Restock</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (searchInput) searchInput.addEventListener('input', renderInventoryTable);
+      if (statusSelect) statusSelect.addEventListener('change', renderInventoryTable);
+
+      if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+          if (!inventoryItems || inventoryItems.length === 0) {
+            alert('No inventory data to export.');
+            return;
+          }
+          const headers = ['ID', 'Title', 'SKU', 'Category', 'Current Stock', 'Reorder Level', 'Status'];
+          const rows = inventoryItems.map(i => [
+            i.id,
+            `"${(i.title || '').replace(/"/g, '""')}"`,
+            `"${i.sku}"`,
+            `"${i.category_name || 'General'}"`,
+            i.stock_quantity,
+            i.reorder_level || 10,
+            i.stock_quantity <= 0 ? 'Out of Stock' : i.stock_quantity <= (i.reorder_level || 10) ? 'Low Stock' : 'In Stock'
+          ]);
+          const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement('a');
+          link.setAttribute('href', encodedUri);
+          link.setAttribute('download', `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      }
+
+      tbody.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-restock');
+        if (!btn) return;
+        const productId = btn.dataset.productId;
+        const title = btn.dataset.title || 'Product';
+        const addedQty = prompt(`Enter quantity to restock for "${title}":`, '20');
+
+        if (addedQty && parseInt(addedQty, 10) > 0) {
+          try {
+            await window.api.admin.adjustInventory(productId, 'restock', parseInt(addedQty, 10), 'Restock from inventory manager');
+            alert(`Stock for "${title}" successfully increased by ${addedQty}!`);
+            await fetchInventory();
+          } catch (err) {
+            alert(err.message || 'Failed to adjust inventory. Please ensure you are logged in as admin.');
+          }
+        }
+      });
+
+      fetchInventory();
     }
   }
 
-  // 6. CUSTOMERS PAGE
+    // 6. CUSTOMERS PAGE
   if (path.endsWith('customers.html')) {
     const tbody = document.querySelector('.data-table tbody');
     if (tbody) {

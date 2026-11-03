@@ -33,8 +33,41 @@
       const desc = document.querySelector('.two-col + div p');
       if (desc && p.description) desc.textContent = p.description;
 
+      const stockQty = parseInt(p.stock_quantity, 10) || 0;
+      const reorderLevel = parseInt(p.reorder_level, 10) || 10;
+      const isOutOfStock = stockQty <= 0;
+      const isLowStock = !isOutOfStock && stockQty <= reorderLevel;
+
+      const stockBadge = document.querySelector('.badge--success, .two-col .badge');
+      if (stockBadge) {
+        if (isOutOfStock) {
+          stockBadge.className = 'badge badge--danger';
+          stockBadge.textContent = 'Out of Stock (0 units)';
+        } else if (isLowStock) {
+          stockBadge.className = 'badge badge--warning';
+          stockBadge.textContent = `Low Stock (Only ${stockQty} left!)`;
+        } else {
+          stockBadge.className = 'badge badge--success';
+          stockBadge.textContent = `In Stock (${stockQty} units available)`;
+        }
+      }
+
+      const qtyInput = document.querySelector('.qty-stepper input');
+      if (qtyInput) {
+        qtyInput.max = Math.max(1, stockQty);
+        if (isOutOfStock) {
+          qtyInput.value = 0;
+          qtyInput.disabled = true;
+        }
+      }
+
       const addBtn = document.querySelector('a[href*="cart.html"].btn--secondary, .btn-add-cart, button.btn--secondary');
-      if (addBtn) {
+      if (addBtn && isOutOfStock) {
+        addBtn.disabled = true;
+        addBtn.textContent = 'Out of Stock';
+        addBtn.style.opacity = '0.5';
+        addBtn.style.cursor = 'not-allowed';
+      } else if (addBtn) {
         addBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           if (!window.api || !window.api.getToken()) {
@@ -74,7 +107,12 @@
       }
 
       const buyBtn = document.querySelector('a[href*="checkout.html"].btn--primary, .btn-buy-now, button.btn--primary');
-      if (buyBtn) {
+      if (buyBtn && isOutOfStock) {
+        buyBtn.disabled = true;
+        buyBtn.textContent = 'Out of Stock';
+        buyBtn.style.opacity = '0.5';
+        buyBtn.style.cursor = 'not-allowed';
+      } else if (buyBtn) {
         buyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           if (!window.api || !window.api.getToken()) {

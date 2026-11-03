@@ -46,16 +46,67 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Your cart is empty. Add products before checkout.' });
     }
 
-    // Verify stock and compute subtotal
+    // Normalize and sanitize items
+    const normalizedItems = [];
+    for (const rawItem of orderItems) {
+      const pId = parseInt(rawItem.product_id || rawItem.productId || (rawItem.product && rawItem.product.id) || rawItem.id, 10);
+      const qty = parseInt(rawItem.quantity, 10) || 1;
+      if (!pId || qty <= 0) continue;
+
+      normalizedItems.push({
+        product_id: pId,
+        quantity: qty,
+        product_title: rawItem.product_title || rawItem.title || null,
+        price: rawItem.price ? parseFloat(rawItem.price) : null
+      });
+    }
+
+    if (normalizedItems.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid products in order.' });
+    }
+
+    // Authoritative stock & price verification from database
     let subtotal = 0;
-    for (const item of orderItems) {
-      if (item.stock_quantity !== undefined && item.stock_quantity < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for "${item.product_title}". Only ${item.stock_quantity} remaining.`
-        });
+    if (isDbConnected()) {
+      for (const item of normalizedItems) {
+        const [prodRows] = await pool.query(
+          'SELECT id, title, price, stock_quantity FROM products WHERE id = ?',
+          [item.product_id]
+        );
+        if (prodRows.length === 0) {
+          return res.status(404).json({ success: false, message: `Product #${item.product_id} not found.` });
+        }
+        const dbProd = prodRows[0];
+        if (dbProd.stock_quantity < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient stock for "${dbProd.title}". Only ${dbProd.stock_quantity} available in inventory.`
+          });
+        }
+        item.product_title = dbProd.title;
+        item.price = parseFloat(dbProd.price);
+        item.stock_quantity = dbProd.stock_quantity;
+        item.total_price = parseFloat((item.price * item.quantity).toFixed(2));
+        subtotal += item.total_price;
       }
-      subtotal += parseFloat(item.price) * item.quantity;
+    } else {
+      for (const item of normalizedItems) {
+        const p = mockData.products.find(prod => prod.id === item.product_id);
+        if (!p) {
+          return res.status(404).json({ success: false, message: `Product #${item.product_id} not found.` });
+        }
+        if (p.stock_quantity < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient stock for "${p.title}". Only ${p.stock_quantity} available in inventory.`
+          });
+        }
+        item.product_title = p.title;
+        item.price = parseFloat(p.price);
+        item.stock_quantity = p.stock_quantity;
+        item.total_price = parseFloat((item.price * item.quantity).toFixed(2));
+        subtotal += item.total_price;
+      }
     }
 
     // Handle coupon
@@ -99,23 +150,21 @@ export const createOrder = async (req, res) => {
         );
         const orderId = orderResult.insertId;
 
-        // 2. Insert Order Items & Deduct Stock
-        for (const item of orderItems) {
-          const itemTotal = parseFloat((parseFloat(item.price) * item.quantity).toFixed(2));
-          const title = item.product_title || item.title || 'Product';
+        // 2. Insert Order Items & Deduct Stock Atomically
+        for (const item of normalizedItems) {
           await conn.query(
             `INSERT INTO order_items (order_id, product_id, product_title, price, quantity, total_price)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [orderId, item.product_id, title, parseFloat(item.price), item.quantity, itemTotal]
+            [orderId, item.product_id, item.product_title, item.price, item.quantity, item.total_price]
           );
 
-          // Deduct stock
+          // Deduct stock from inventory
           await conn.query(
-            'UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?',
+            'UPDATE products SET stock_quantity = GREATEST(0, stock_quantity - ?) WHERE id = ?',
             [item.quantity, item.product_id]
           );
 
-          // Record log
+          // Record audit entry in inventory_logs
           await conn.query(
             `INSERT INTO inventory_logs (product_id, change_type, quantity_change, new_quantity, notes)
              SELECT id, 'sale', -?, stock_quantity, CONCAT('Sold in Order #', ?) FROM products WHERE id = ?`,
@@ -131,10 +180,16 @@ export const createOrder = async (req, res) => {
 
         return res.status(201).json({
           success: true,
-          message: 'Order placed successfully!',
+          message: 'Order placed successfully! Inventory updated.',
           orderNumber,
           orderId,
-          totalAmount
+          totalAmount,
+          items: normalizedItems.map(i => ({
+            productId: i.product_id,
+            title: i.product_title,
+            quantity: i.quantity,
+            newStock: Math.max(0, i.stock_quantity - i.quantity)
+          }))
         });
       } catch (err) {
         await conn.rollback();
@@ -157,17 +212,17 @@ export const createOrder = async (req, res) => {
         payment_status: paymentMethod === 'cod' ? 'pending' : 'paid',
         shipping_address: shippingAddress,
         created_at: new Date().toISOString(),
-        items: orderItems.map(i => ({
+        items: normalizedItems.map(i => ({
           product_id: i.product_id,
-          product_title: i.product_title || i.title || 'Product',
-          price: parseFloat(i.price),
+          product_title: i.product_title,
+          price: i.price,
           quantity: i.quantity,
-          total_price: parseFloat((parseFloat(i.price) * i.quantity).toFixed(2))
+          total_price: i.total_price
         }))
       };
 
       // Deduct mock stock
-      for (const item of orderItems) {
+      for (const item of normalizedItems) {
         const p = mockData.products.find(prod => prod.id === item.product_id);
         if (p) p.stock_quantity = Math.max(0, p.stock_quantity - item.quantity);
       }
@@ -177,10 +232,16 @@ export const createOrder = async (req, res) => {
 
       return res.status(201).json({
         success: true,
-        message: 'Order placed successfully!',
+        message: 'Order placed successfully! Inventory updated.',
         orderNumber,
         orderId: newOrder.id,
-        totalAmount
+        totalAmount,
+        items: normalizedItems.map(i => ({
+          productId: i.product_id,
+          title: i.product_title,
+          quantity: i.quantity,
+          newStock: Math.max(0, i.stock_quantity - i.quantity)
+        }))
       });
     }
   } catch (error) {
