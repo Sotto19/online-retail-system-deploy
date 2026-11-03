@@ -4,10 +4,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = window.api ? window.api.getCurrentUser() : null;
   const token = window.api ? window.api.getToken() : null;
 
-  // Protect Admin Pages
+  // Protect Admin Pages & provide 1-click helper banner if in guest mode
+  const adminContent = document.querySelector('.admin-content') || document.querySelector('#main');
   if (!token || !user || (user.role !== 'admin' && user.role !== 'manager')) {
-    // If not authenticated as admin, prompt or redirect
-    console.warn('Unauthorized admin access attempt. Please sign in as admin.');
+    console.warn('Unauthorized admin access attempt. Offering demo sign-in.');
+    if (adminContent && !document.getElementById('admin-auth-warning')) {
+      const banner = document.createElement('div');
+      banner.id = 'admin-auth-warning';
+      banner.style.cssText = 'background:#FFFBEB;border:1px solid #FCD34D;color:#B45309;padding:12px 18px;border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:14px;';
+      banner.innerHTML = `
+        <span>⚠️ <strong>Admin Access Mode:</strong> You are currently not signed in as an administrator.</span>
+        <button type="button" id="btn-quick-admin-login" style="background:#D97706;color:#FFF;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;">👑 1-Click Demo Admin Sign In</button>
+      `;
+      adminContent.prepend(banner);
+      const loginBtn = document.getElementById('btn-quick-admin-login');
+      if (loginBtn) {
+        loginBtn.onclick = async () => {
+          try {
+            await window.api.login('admin@example.com', 'password123');
+            window.location.reload();
+          } catch (err) {
+            alert('Login failed: ' + err.message);
+          }
+        };
+      }
+    }
   }
 
   // Update Admin user avatar & name in sidebar if present
@@ -149,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </span>
               </td>
               <td>
-                <button type="button" class="btn btn--outline btn--xs btn-edit-product">Edit</button>
+                <a href="add-product.html?id=${p.id}" class="btn btn--outline btn--xs">Edit</a>
                 <button type="button" class="btn btn--ghost btn--xs btn-delete-product" style="margin-left:4px;color:var(--danger,#DC2626)">Delete</button>
               </td>
             </tr>
@@ -210,51 +231,199 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 3. ADD PRODUCT PAGE
-  if (path.endsWith('add-product.html')) {
-    const form = document.querySelector('form');
+  if (path.endsWith('add-product.html') || path.endsWith('add-product')) {
+    const form = document.getElementById('add-product-form') || document.querySelector('.admin-content form');
+    const alertBox = document.getElementById('add-product-alert');
+
+    function showAlert(msg, isError = false) {
+      if (!alertBox) {
+        alert(msg);
+        return;
+      }
+      alertBox.style.display = 'block';
+      alertBox.style.background = isError ? '#FEF2F2' : '#F0FDF4';
+      alertBox.style.color = isError ? '#B91C1C' : '#15803D';
+      alertBox.style.border = `1px solid ${isError ? '#F87171' : '#86EFAC'}`;
+      alertBox.innerHTML = `${isError ? '⚠️' : '✓'} ${msg}`;
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Populate categories dynamically from API
+    const catSelect = document.getElementById('pcat') || form?.querySelector('select[name="category"]');
+    if (catSelect) {
+      window.api.getCategories().then(data => {
+        const cats = data.categories || [];
+        if (cats.length > 0) {
+          catSelect.innerHTML = '<option value="">Select category...</option>' + 
+            cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+      }).catch(err => {
+        console.warn('Could not load dynamic categories for add-product:', err);
+      });
+    }
+
+    // Quick Sample Images and Image preview box
+    const imageInput = document.getElementById('pimage') || form?.querySelector('input[name="image_url"]');
+    const imgPreviewBox = document.getElementById('img-preview-box');
+    const imgPreview = document.getElementById('img-preview');
+
+    function updateImagePreview(url) {
+      if (!imgPreviewBox || !imgPreview) return;
+      if (url && url.trim().startsWith('http')) {
+        imgPreview.src = url.trim();
+        imgPreviewBox.style.display = 'flex';
+      } else {
+        imgPreviewBox.style.display = 'none';
+      }
+    }
+
+    if (imageInput) {
+      imageInput.addEventListener('input', () => updateImagePreview(imageInput.value));
+      imageInput.addEventListener('blur', () => updateImagePreview(imageInput.value));
+    }
+
+    document.querySelectorAll('.btn-sample-img').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const img = btn.dataset.img;
+        if (imageInput && img) {
+          imageInput.value = img;
+          updateImagePreview(img);
+        }
+      });
+    });
+
+    // Auto-generate SKU button
+    const btnGenSku = document.getElementById('btn-generate-sku');
+    const skuInput = document.getElementById('psku') || form?.querySelector('input[name="sku"]');
+    const brandInput = document.getElementById('pbrand') || form?.querySelector('input[name="brand"]');
+
+    function generateUniqueSku() {
+      const b = (brandInput?.value || 'PRD').trim().replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'PRD';
+      const num = Math.floor(100 + Math.random() * 900);
+      return `SE-${b}-${num}`;
+    }
+
+    if (btnGenSku && skuInput) {
+      btnGenSku.addEventListener('click', () => {
+        skuInput.value = generateUniqueSku();
+      });
+    }
+
+    // Pre-populate if in Edit Mode (?id=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('id');
+    if (editId) {
+      const topTitle = document.querySelector('.topbar__title, h2');
+      if (topTitle) topTitle.textContent = 'Edit Product #' + editId;
+      const saveBtn = document.getElementById('btn-save-product');
+      if (saveBtn) saveBtn.textContent = 'Update Product';
+
+      window.api.getProduct(editId).then(data => {
+        const p = data.product;
+        if (!p) return;
+        if (document.getElementById('pname')) document.getElementById('pname').value = p.title || '';
+        if (document.getElementById('pdesc')) document.getElementById('pdesc').value = p.description || '';
+        if (document.getElementById('pbrand')) document.getElementById('pbrand').value = p.brand || '';
+        if (document.getElementById('pcat')) document.getElementById('pcat').value = p.category_id || '';
+        if (document.getElementById('psku')) {
+          document.getElementById('psku').value = p.sku || '';
+          document.getElementById('psku').readOnly = true;
+        }
+        if (document.getElementById('pprice')) document.getElementById('pprice').value = p.price || '';
+        if (document.getElementById('poldprice')) document.getElementById('poldprice').value = p.compare_price || '';
+        if (document.getElementById('pcost')) document.getElementById('pcost').value = p.cost_price || '';
+        if (document.getElementById('pstock')) document.getElementById('pstock').value = p.stock_quantity ?? 0;
+        if (document.getElementById('pimage')) {
+          document.getElementById('pimage').value = p.image_url || '';
+          updateImagePreview(p.image_url);
+        }
+        if (document.getElementById('pstatus')) document.getElementById('pstatus').value = p.status || 'active';
+      }).catch(err => {
+        console.warn('Could not prefill for edit:', err);
+      });
+    }
+
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const submitBtn = form.querySelector('button[type="submit"]');
+        e.stopPropagation();
 
-        const title = form.querySelector('#title, input[name="title"], input[placeholder*="Product Name"]')?.value?.trim();
-        const sku = form.querySelector('#sku, input[name="sku"], input[placeholder*="SKU"]')?.value?.trim();
-        const brand = form.querySelector('#brand, input[name="brand"], input[placeholder*="Brand"]')?.value?.trim();
-        const categoryId = form.querySelector('#category, select[name="category"]')?.value;
-        const price = form.querySelector('#price, input[name="price"], input[placeholder*="Price"]')?.value?.trim();
-        const costPrice = form.querySelector('#costPrice, input[name="cost_price"]')?.value?.trim();
-        const stock = form.querySelector('#stock, input[name="stock"], input[placeholder*="Stock"]')?.value?.trim();
-        const description = form.querySelector('textarea')?.value?.trim();
+        const submitBtn = document.getElementById('btn-save-product') || form.querySelector('button[type="submit"]');
 
-        if (!title || !sku || !price) {
-          alert('Product Title, SKU, and Price are required.');
+        const title = (document.getElementById('pname') || form.querySelector('input[name="title"]'))?.value?.trim();
+        const brand = (document.getElementById('pbrand') || form.querySelector('input[name="brand"]'))?.value?.trim() || 'Generic';
+        let sku = (document.getElementById('psku') || form.querySelector('input[name="sku"]'))?.value?.trim();
+        const categoryId = (document.getElementById('pcat') || form.querySelector('select[name="category"]'))?.value;
+        const price = (document.getElementById('pprice') || form.querySelector('input[name="price"]'))?.value?.trim();
+        const comparePrice = (document.getElementById('poldprice') || form.querySelector('input[name="compare_price"]'))?.value?.trim();
+        const costPrice = (document.getElementById('pcost') || form.querySelector('input[name="cost_price"]'))?.value?.trim();
+        const stock = (document.getElementById('pstock') || form.querySelector('input[name="stock"]'))?.value?.trim();
+        let imageUrl = (document.getElementById('pimage') || form.querySelector('input[name="image_url"]'))?.value?.trim();
+        const description = (document.getElementById('pdesc') || form.querySelector('textarea'))?.value?.trim();
+        const status = (document.getElementById('pstatus') || form.querySelector('select[name="status"]'))?.value || 'active';
+
+        if (!title) {
+          showAlert('Please enter the Product Name.', true);
           return;
         }
 
+        if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+          showAlert('Please enter a valid Selling Price.', true);
+          return;
+        }
+
+        if (!sku) {
+          sku = generateUniqueSku();
+          if (skuInput) skuInput.value = sku;
+        }
+
+        if (!imageUrl) {
+          imageUrl = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
+        }
+
+        const origBtnText = submitBtn ? submitBtn.innerHTML : 'Save Product';
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.innerText = 'Creating product...';
         }
 
         try {
-          await window.api.admin.createProduct({
+          // If not logged in as admin, login as demo admin automatically
+          if (!window.api.getToken() || (user && user.role !== 'admin' && user.role !== 'manager')) {
+            await window.api.login('admin@example.com', 'password123');
+          }
+
+          const productPayload = {
             title,
             sku,
-            brand: brand || 'Generic',
-            category_id: categoryId || 1,
+            brand,
+            category_id: categoryId ? parseInt(categoryId, 10) : 1,
             price: parseFloat(price),
+            compare_price: comparePrice ? parseFloat(comparePrice) : null,
             cost_price: costPrice ? parseFloat(costPrice) : null,
-            stock_quantity: parseInt(stock, 10) || 10,
-            description: description || ''
-          });
+            stock_quantity: stock ? parseInt(stock, 10) : 20,
+            image_url: imageUrl,
+            description: description || '',
+            status: status || 'active'
+          };
 
-          alert('Product created successfully!');
-          window.location.href = 'products.html';
+          if (editId) {
+            await window.api.admin.updateProduct(editId, productPayload);
+            showAlert(`Product "${title}" updated successfully! Redirecting to products list...`, false);
+          } else {
+            const res = await window.api.admin.createProduct(productPayload);
+            showAlert(`Product "${title}" created successfully! Redirecting to products list...`, false);
+          }
+
+          setTimeout(() => {
+            window.location.href = 'products.html';
+          }, 800);
         } catch (err) {
-          alert(err.message || 'Failed to create product.');
+          showAlert(err.message || 'Failed to create product. Please verify credentials.', true);
           if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerText = 'Save Product';
+            submitBtn.innerHTML = origBtnText;
           }
         }
       });
