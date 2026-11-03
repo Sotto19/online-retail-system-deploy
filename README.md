@@ -202,7 +202,11 @@ npm run dev
 * `PUT /api/cart/:id` — Update quantity of an item.
 * `DELETE /api/cart/:id` — Remove item from cart.
 * `DELETE /api/cart` — Empty cart.
-* `POST /api/coupons/validate` — Validate promo code (`NEWUSER`, `FESTIVE20`, `FLAT500`).
+* `GET /api/coupons` — List all active promo codes and discounts.
+* `POST /api/coupons/validate` — Validate promo code (`SAVE20`, `NEWUSER`, `ELEC15`, `FESTIVE20`, `FLAT500`).
+* `POST /api/coupons` *(Admin)* — Create a new discount code.
+* `PATCH /api/coupons/:id/toggle` *(Admin)* — Activate or deactivate a discount code.
+* `DELETE /api/coupons/:id` *(Admin)* — Delete a discount code.
 
 ### Checkout & Orders (`/api/orders`)
 * `POST /api/orders` — Place order, deduct inventory, and record transaction items.

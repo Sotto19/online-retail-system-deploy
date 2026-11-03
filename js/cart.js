@@ -155,19 +155,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Handle Coupon Apply
   if (couponBtn && couponInput) {
-    couponBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
+    const handleApplyCoupon = async () => {
       const code = couponInput.value.trim();
-      if (!code) return;
+      if (!code) {
+        alert('Please enter a coupon code (e.g. SAVE20, NEWUSER).');
+        couponInput.focus();
+        return;
+      }
+
+      if (!window.api.getToken()) {
+        alert('Please sign in to apply coupons to your cart.');
+        window.location.href = '../login.html';
+        return;
+      }
 
       try {
+        couponBtn.disabled = true;
+        couponBtn.textContent = 'Applying...';
         const cartData = await window.api.getCart();
         const res = await window.api.validateCoupon(code, cartData.subtotal);
         currentCoupon = res.coupon;
-        alert(res.message || 'Coupon applied successfully!');
+        alert(`🎉 Coupon "${res.coupon.code}" applied! You save ₹${res.coupon.calculatedDiscount.toLocaleString('en-IN')}`);
         updateSummary(cartData.subtotal, cartData.items.length);
       } catch (err) {
-        alert(err.message || 'Invalid coupon code.');
+        alert(err.message || 'Invalid or expired coupon code.');
+      } finally {
+        couponBtn.disabled = false;
+        couponBtn.textContent = 'Apply';
+      }
+    };
+
+    couponBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await handleApplyCoupon();
+    });
+
+    couponInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await handleApplyCoupon();
       }
     });
   }

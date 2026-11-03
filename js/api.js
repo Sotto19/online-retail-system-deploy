@@ -134,10 +134,33 @@ const api = {
   },
 
   // Coupons
+  async getCoupons() {
+    return this.request('/coupons');
+  },
+
   async validateCoupon(code, orderAmount) {
     return this.request('/coupons/validate', {
       method: 'POST',
       body: { code, orderAmount }
+    });
+  },
+
+  async createCoupon(couponData) {
+    return this.request('/coupons', {
+      method: 'POST',
+      body: couponData
+    });
+  },
+
+  async toggleCoupon(id) {
+    return this.request(`/coupons/${id}/toggle`, {
+      method: 'PATCH'
+    });
+  },
+
+  async deleteCoupon(id) {
+    return this.request(`/coupons/${id}`, {
+      method: 'DELETE'
     });
   },
 
@@ -203,6 +226,18 @@ const api = {
     },
     getCustomers() {
       return api.request('/admin/customers');
+    },
+    getCoupons() {
+      return api.getCoupons();
+    },
+    createCoupon(data) {
+      return api.createCoupon(data);
+    },
+    toggleCoupon(id) {
+      return api.toggleCoupon(id);
+    },
+    deleteCoupon(id) {
+      return api.deleteCoupon(id);
     }
   }
 };

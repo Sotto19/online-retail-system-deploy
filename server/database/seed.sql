@@ -61,7 +61,9 @@ INSERT INTO addresses (user_id, full_name, phone, address_line1, address_line2, 
 
 -- 6. Coupons
 INSERT INTO coupons (code, discount_type, discount_value, min_order_amount, expires_at, is_active) VALUES
-('NEWUSER', 'percentage', 10.00, 499.00, '2027-12-31', TRUE),
+('NEWUSER', 'percentage', 10.00, 0.00, '2027-12-31', TRUE),
+('SAVE20', 'percentage', 20.00, 0.00, '2027-12-31', TRUE),
+('ELEC15', 'percentage', 15.00, 500.00, '2027-12-31', TRUE),
 ('FESTIVE20', 'percentage', 20.00, 1999.00, '2027-12-31', TRUE),
 ('FLAT500', 'fixed', 500.00, 2999.00, '2027-12-31', TRUE);
 

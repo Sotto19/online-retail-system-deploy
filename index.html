@@ -33,8 +33,8 @@
     <a href="index.html" class="navbar__logo">Satyabrata's <span>Shop</span></a>
     <button class="navbar__categories">☰ Categories ▾</button>
     <div class="navbar__search">
-      <form class="search-form" role="search">
-        <input type="search" placeholder="Search for products, brands and more..." aria-label="Search products" />
+      <form class="search-form" role="search" action="javascript:void(0);" onsubmit="return false;">
+        <input type="search" id="navbar-search-input" placeholder="Search for products, brands and more..." aria-label="Search products" autocomplete="off" />
         <button type="submit" aria-label="Search">🔍</button>
       </form>
     </div>
@@ -54,15 +54,15 @@
   </div>
   <nav class="navbar__nav" aria-label="Product categories">
     <div class="navbar__nav-inner">
-      <a href="customer/category.html" class="navbar__nav-link active">Electronics</a>
-      <a href="customer/category.html" class="navbar__nav-link">Fashion</a>
-      <a href="customer/category.html" class="navbar__nav-link">Home & Kitchen</a>
-      <a href="customer/category.html" class="navbar__nav-link">Beauty</a>
-      <a href="customer/category.html" class="navbar__nav-link">Books</a>
-      <a href="customer/category.html" class="navbar__nav-link">Sports</a>
-      <a href="customer/category.html" class="navbar__nav-link">Grocery</a>
-      <a href="customer/category.html" class="navbar__nav-link">Toys</a>
-      <a href="customer/category.html" class="navbar__nav-link">Automotive</a>
+      <a href="javascript:void(0);" class="navbar__nav-link active" data-category="electronics">Electronics</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="fashion">Fashion</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="home-kitchen">Home & Kitchen</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="beauty">Beauty</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="books">Books</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="sports">Sports</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="grocery">Grocery</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="toys">Toys</a>
+      <a href="javascript:void(0);" class="navbar__nav-link" data-category="automotive">Automotive</a>
     </div>
   </nav>
 </header>
@@ -103,39 +103,39 @@
     <section class="section--sm" aria-labelledby="cat-heading">
       <h2 id="cat-heading" class="section-title">Shop by Category <a href="customer/category.html">View All</a></h2>
       <div class="category-strip">
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="electronics">
           <div class="category-card__icon">📱</div>
           <span class="category-card__name">Electronics</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="fashion">
           <div class="category-card__icon">👗</div>
           <span class="category-card__name">Fashion</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="home-kitchen">
           <div class="category-card__icon">🏠</div>
           <span class="category-card__name">Home & Kitchen</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="beauty">
           <div class="category-card__icon">💄</div>
           <span class="category-card__name">Beauty</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="books">
           <div class="category-card__icon">📚</div>
           <span class="category-card__name">Books</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="sports">
           <div class="category-card__icon">⚽</div>
           <span class="category-card__name">Sports</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="grocery">
           <div class="category-card__icon">🛒</div>
           <span class="category-card__name">Grocery</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="automotive">
           <div class="category-card__icon">🚗</div>
           <span class="category-card__name">Automotive</span>
         </a>
-        <a href="customer/category.html" class="category-card">
+        <a href="javascript:void(0);" class="category-card" data-category="toys">
           <div class="category-card__icon">🧸</div>
           <span class="category-card__name">Toys</span>
         </a>
@@ -143,9 +143,40 @@
     </section>
 
     <!-- FEATURED PRODUCTS -->
-    <section class="section--sm" aria-labelledby="featured-heading">
-      <h2 id="featured-heading" class="section-title">⭐ Featured Products <a href="customer/products.html">View All</a></h2>
-      <div class="product-grid">
+    <section class="section--sm" id="products-section" aria-labelledby="featured-heading">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <h2 id="featured-heading" class="section-title" style="margin-bottom:0">⭐ Explore Products <a href="customer/products.html">View All</a></h2>
+        
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label for="home-sort-select" style="font-size:13px;color:var(--text-muted);font-weight:600">Sort by:</label>
+          <select id="home-sort-select" class="form-control" style="width:auto;padding:6px 12px;font-size:13px;border-radius:6px;cursor:pointer;">
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+          <button type="button" id="btn-reset-filters" class="btn btn--outline btn--sm" style="display:none;padding:6px 12px;font-size:13px;">✕ Reset Filters</button>
+        </div>
+      </div>
+
+      <!-- Quick Category Filter Pills -->
+      <div class="category-pills" id="home-category-pills" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:16px;-webkit-overflow-scrolling:touch;">
+        <button type="button" class="btn-cat-pill active" data-category="all" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #2563EB;background:#2563EB;color:#FFF;cursor:pointer;white-space:nowrap;transition:all 0.2s;">✨ All Products</button>
+        <button type="button" class="btn-cat-pill" data-category="electronics" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #CBD5E1;background:#FFF;color:#1E293B;cursor:pointer;white-space:nowrap;transition:all 0.2s;">📱 Electronics</button>
+        <button type="button" class="btn-cat-pill" data-category="fashion" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #CBD5E1;background:#FFF;color:#1E293B;cursor:pointer;white-space:nowrap;transition:all 0.2s;">👗 Fashion</button>
+        <button type="button" class="btn-cat-pill" data-category="home-kitchen" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #CBD5E1;background:#FFF;color:#1E293B;cursor:pointer;white-space:nowrap;transition:all 0.2s;">🏠 Home & Kitchen</button>
+        <button type="button" class="btn-cat-pill" data-category="beauty" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #CBD5E1;background:#FFF;color:#1E293B;cursor:pointer;white-space:nowrap;transition:all 0.2s;">💄 Beauty</button>
+        <button type="button" class="btn-cat-pill" data-category="books" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #CBD5E1;background:#FFF;color:#1E293B;cursor:pointer;white-space:nowrap;transition:all 0.2s;">📚 Books</button>
+        <button type="button" class="btn-cat-pill" data-category="sports" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid #CBD5E1;background:#FFF;color:#1E293B;cursor:pointer;white-space:nowrap;transition:all 0.2s;">⚽ Sports</button>
+      </div>
+
+      <!-- Live Search & Filter Status Alert -->
+      <div id="home-filter-status" style="display:none;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;padding:10px 16px;border-radius:8px;margin-bottom:18px;font-size:14px;align-items:center;justify-content:space-between;">
+        <span id="home-filter-text">Showing filtered results</span>
+        <button type="button" id="btn-clear-home-filter" style="background:none;border:none;color:#1E40AF;text-decoration:underline;cursor:pointer;font-weight:600;font-size:13px;">✕ Clear</button>
+      </div>
+
+      <div class="product-grid" id="main-product-grid">
         <!-- Product 1 -->
         <article class="product-card" data-id="1">
           <div class="product-card__img-wrap">

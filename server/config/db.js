@@ -281,9 +281,11 @@ export const mockData = {
     }
   ],
   coupons: [
-    { id: 1, code: 'NEWUSER', discount_type: 'percentage', discount_value: 10.00, min_order_amount: 499.00, is_active: 1 },
-    { id: 2, code: 'FESTIVE20', discount_type: 'percentage', discount_value: 20.00, min_order_amount: 1999.00, is_active: 1 },
-    { id: 3, code: 'FLAT500', discount_type: 'fixed', discount_value: 500.00, min_order_amount: 2999.00, is_active: 1 }
+    { id: 1, code: 'NEWUSER', discount_type: 'percentage', discount_value: 10.00, min_order_amount: 0.00, is_active: 1 },
+    { id: 2, code: 'SAVE20', discount_type: 'percentage', discount_value: 20.00, min_order_amount: 0.00, is_active: 1 },
+    { id: 3, code: 'ELEC15', discount_type: 'percentage', discount_value: 15.00, min_order_amount: 500.00, is_active: 1 },
+    { id: 4, code: 'FESTIVE20', discount_type: 'percentage', discount_value: 20.00, min_order_amount: 1999.00, is_active: 1 },
+    { id: 5, code: 'FLAT500', discount_type: 'fixed', discount_value: 500.00, min_order_amount: 2999.00, is_active: 1 }
   ]
 };
 

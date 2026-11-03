@@ -384,4 +384,133 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   }
+
+  // 7. DISCOUNTS / PROMO CODES PAGE
+  if (path.endsWith('discounts.html') || path.endsWith('discounts')) {
+    const tbody = document.getElementById('discounts-table-body') || document.querySelector('.data-table tbody');
+    const searchInput = document.getElementById('search-discounts') || document.querySelector('.admin-content input[type="text"]');
+    const createBtn = document.getElementById('btn-create-discount') || document.querySelector('.admin-content .btn--primary');
+
+    let allCoupons = [];
+
+    async function loadDiscounts() {
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px">Loading discounts...</td></tr>';
+
+      try {
+        const data = await window.api.admin.getCoupons();
+        allCoupons = data.coupons || [];
+        renderDiscountsTable(allCoupons);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:var(--danger,#DC2626);text-align:center;padding:20px">Error loading discounts: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderDiscountsTable(coupons) {
+      const term = (searchInput?.value || '').trim().toUpperCase();
+      const filtered = coupons.filter(c => !term || (c.code && c.code.toUpperCase().includes(term)));
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px">No discount codes found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => {
+        const isActive = c.is_active == 1 || c.is_active === true;
+        const discountVal = parseFloat(c.discount_value);
+        const discountDisplay = c.discount_type === 'percentage' ? `${discountVal}%` : `₹${discountVal.toLocaleString('en-IN')}`;
+        const minOrder = parseFloat(c.min_order_amount || 0);
+        const minOrderDisplay = minOrder > 0 ? `₹${minOrder.toLocaleString('en-IN')}` : '₹0';
+        const expiryDisplay = c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Never';
+
+        return `
+          <tr data-coupon-id="${c.id}">
+            <td><span class="discount-code" style="font-weight:700;letter-spacing:0.5px">${c.code}</span></td>
+            <td style="font-weight:600;color:var(--primary,#2563EB)">${discountDisplay} OFF</td>
+            <td><span style="text-transform:capitalize">${c.discount_type || 'percentage'}</span></td>
+            <td>${minOrderDisplay}</td>
+            <td>${expiryDisplay}</td>
+            <td>
+              <span class="badge badge--${isActive ? 'success' : 'warning'}">
+                ${isActive ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+            <td>
+              <button type="button" class="btn btn--outline btn--xs btn-toggle-coupon">
+                ${isActive ? 'Deactivate' : 'Activate'}
+              </button>
+              <button type="button" class="btn btn--ghost btn--xs btn-delete-coupon" style="margin-left:4px;color:var(--danger,#DC2626)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        renderDiscountsTable(allCoupons);
+      });
+    }
+
+    if (tbody) {
+      tbody.addEventListener('click', async (e) => {
+        const tr = e.target.closest('tr[data-coupon-id]');
+        if (!tr) return;
+        const couponId = tr.dataset.couponId;
+
+        if (e.target.classList.contains('btn-toggle-coupon')) {
+          try {
+            await window.api.admin.toggleCoupon(couponId);
+            await loadDiscounts();
+          } catch (err) {
+            alert(err.message || 'Failed to update coupon status.');
+          }
+        } else if (e.target.classList.contains('btn-delete-coupon')) {
+          if (confirm('Are you sure you want to delete this coupon?')) {
+            try {
+              await window.api.admin.deleteCoupon(couponId);
+              alert('Coupon deleted successfully.');
+              await loadDiscounts();
+            } catch (err) {
+              alert(err.message || 'Failed to delete coupon.');
+            }
+          }
+        }
+      });
+    }
+
+    if (createBtn) {
+      createBtn.addEventListener('click', async () => {
+        const code = prompt('Enter coupon code (e.g. FLASH25):');
+        if (!code || !code.trim()) return;
+
+        const discountVal = prompt('Enter discount amount (e.g. 20 for 20% or 500 for ₹500):', '20');
+        if (!discountVal || isNaN(discountVal)) {
+          alert('Please enter a valid numeric discount value.');
+          return;
+        }
+
+        const isPercentage = confirm('Is this a percentage discount?\n\nClick [OK] for Percentage (e.g. 20%)\nClick [Cancel] for Fixed Amount (e.g. ₹500)');
+        const minOrder = prompt('Minimum order purchase required in ₹ (enter 0 for no minimum):', '0');
+
+        try {
+          await window.api.admin.createCoupon({
+            code: code.trim().toUpperCase(),
+            discount_type: isPercentage ? 'percentage' : 'fixed',
+            discount_value: parseFloat(discountVal),
+            min_order_amount: parseFloat(minOrder || 0),
+            expires_at: '2027-12-31'
+          });
+          alert(`🎉 Coupon "${code.trim().toUpperCase()}" created successfully!`);
+          await loadDiscounts();
+        } catch (err) {
+          alert(err.message || 'Failed to create coupon.');
+        }
+      });
+    }
+
+    loadDiscounts();
+  }
 });
